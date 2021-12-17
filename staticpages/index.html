@@ -1,0 +1,246 @@
+<html>
+    <head>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+            
+            
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+                integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    </head>
+    <body>
+        <div id="create-update" style="display:none">
+            <h2>create-edit</h2>
+            <table id="createUpdateForm">
+                <tr>
+                    <td>ProductID</td>
+                    <td><input type="text" name="ProductID" id="idInput"></td>
+                </tr>
+                <tr>  
+                    <td>name</td>
+                    <td><input type="text" name="name"></td>
+                </tr>
+                <tr>
+                    <td>category</td>
+                    <td><input type="text" name="category"></td>
+                </tr>
+                <tr>    
+                    <td>price</td>
+                    <td><input type="currency" name="price"></td>
+                </tr>
+                <tr>
+                    <td></td><td>
+                        <button id="create-button" onclick="doCreate()">Create</button>     
+                        <button id="update-button" onclick="doUpdate()">Update</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="display">
+            <h2>Products</h2>
+            <button onClick="showCreate()">Create</button>
+            <table id="productTable" class="table">
+                <tr>
+                    <th id = "ProductIDTable">ProductID</th><th>name</th><th>category</th><th>price</th><th></th><th></th>
+                </tr>
+                
+            </table>
+
+        </div>
+
+        <script>
+            function showCreate(){
+
+                var form = document.getElementById('createUpdateForm')
+
+                // Have empty string in ID as reloading the page generates an ID"
+                // I attempted to create a function that gets the next ID that will be used 
+                // but this was quite difficult due to asynchronicity in ajax functions
+                form.querySelector('input[name="ProductID"]').value = ""
+                form.querySelector('input[name="ProductID"]').disabled=true
+
+                document.getElementById('display').style.display = "none"
+                document.getElementById('update-button').style.display = "none"
+                document.getElementById('create-button').style.display = "block"
+                document.getElementById('create-update').style.display = "block"
+
+
+
+            }
+            function showUpdate(thisElem){
+                var rowElement = thisElem.parentNode.parentNode;
+                product = readProductFromRow(rowElement)
+                populateForm(product)
+
+                document.getElementById('display').style.display = "none"
+                document.getElementById('update-button').style.display = "block"
+                document.getElementById('create-button').style.display = "none"
+                document.getElementById('create-update').style.display = "block"
+
+            }
+            function readProductFromRow(rowElement){
+                product = {}
+                product.ProductID = rowElement.getAttribute("id");
+                product.name = rowElement.cells[1].firstChild.textContent
+                product.category = rowElement.cells[2].firstChild.textContent
+                product.price = rowElement.cells[3].firstChild.textContent
+
+                return product
+                
+            }
+            function populateForm(product){
+                var form = document.getElementById('createUpdateForm')
+
+                
+                form.querySelector('input[name="ProductID"]').value = product.ProductID
+                form.querySelector('input[name="ProductID"]').disabled=true
+                
+                form.querySelector('input[name="name"]').value = product.name
+                form.querySelector('input[name="category"]').value = product.category
+                form.querySelector('input[name="price"]').value = product.price      
+            }
+            function clearForm() {
+                    var form = document.getElementById('createUpdateForm')
+
+
+                    form.querySelector('input[name="ProductID"]').value = ''
+                    form.querySelector('input[name="ProductID"]').disabled = false
+
+                    form.querySelector('input[name="name"]').value = ''
+                    form.querySelector('input[name="category"]').value = ''
+                    form.querySelector('input[name="price"]').value = ''
+                }
+
+            function doCreate(){
+                console.log("in doCreate")
+                product= getProductFromForm()
+                console.log(product)
+                $.ajax({
+                    url:"/products",
+                    data:JSON.stringify(product),
+                    method:"POST",
+                    dataType:"JSON",
+                    contentType: "application/json; charset=utf-8",
+                    success:function(result){
+                        console.log(result) 
+                        addProductToTable(product)
+                        showDisplay()
+                        clearForm()
+
+                    },
+                    error:function(xhr,status,error){
+                        console.log("error"+error)
+                    }
+                })
+                // Reloading allows the ID to refresh due to auto-increment
+                window.location.reload();
+               
+            }
+            function doUpdate(){
+                product = getProductFromForm()
+                updateServer(product)
+                
+            }
+            function updateServer(product){
+               $.ajax({
+                    url: "/products/"+product.ProductID,
+                    data: JSON.stringify(product),
+                    method: "PUT",
+                    dataType: "JSON",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (result) {
+                        console.log(result)
+                        updateTableRow(product)
+                        showDisplay()
+                        clearForm()
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("error" + error)
+                    }
+                })
+            }
+            function doDelete(thisElem){
+                var tableElement = document.getElementById('productTable');
+                var rowElement = thisElem.parentNode.parentNode;
+                var index = rowElement.rowIndex;
+                ProductID = rowElement.getAttribute("id");
+                $.ajax({
+                    url:"/products/"+ProductID,
+                    method:"DELETE",
+                    dateType:"JSON",
+                    success:function(result){
+                        tableElement.deleteRow(index);
+                    },
+                    error:function(xhr,status,error){
+                        console.log(error)
+                    }
+                })
+                
+            }
+            function updateTableRow(product){
+                rowElement = document.getElementById(product.ProductID)
+                rowElement.cells[1].firstChild.textContent = product.name
+                rowElement.cells[2].firstChild.textContent = product.category
+                rowElement.cells[3].firstChild.textContent = product.price
+                //console.log("updating table")
+            }
+            function getProductFromForm(){
+                var form = document.getElementById('createUpdateForm')
+
+                var product = {}
+                product.ProductID = form.querySelector('input[name="ProductID"]').value
+                product.name = form.querySelector('input[name="name"]').value
+                product.category = form.querySelector('input[name="category"]').value
+                product.price = form.querySelector('input[name="price"]').value
+                //console.log(product)
+                return product
+            }
+             function showDisplay() {
+                    document.getElementById('display').style.display = "block"
+                    document.getElementById('create-update').style.display = "none"
+
+                }
+
+
+
+
+            function populateTable(){
+            host = window.location.origin
+               $.ajax({
+                   url: host + '/products',
+                   method:'GET',
+                   datatype:'JSON',
+                   success:function(results){
+                        for (product of results){
+                             addProductToTable(product)
+                        }
+                   },
+                   error:function (xhr,status,error){
+                       console.log ("error "+error +" code:"+status)
+                   }
+
+               })
+               
+            }
+            function addProductToTable(product){
+                //console.log("working so far")
+                tableElem = document.getElementById("productTable")
+                rowElem = tableElem.insertRow(-1)
+                rowElem.setAttribute("id", product.ProductID)
+                cell1 = rowElem.insertCell(0)
+                cell1.innerHTML = product.ProductID
+                cell2 = rowElem.insertCell(1)
+                cell2.innerHTML = product.name
+                cell3 = rowElem.insertCell(2)
+                cell3.innerHTML = product.category
+                cell4 = rowElem.insertCell(3)
+                cell4.innerHTML = product.price
+                cell5 = rowElem.insertCell(4)
+                cell5.innerHTML = '<button onclick="showUpdate(this)">Update</button>'
+                cell6 = rowElem.insertCell(5)
+                cell6.innerHTML = '<button onclick="doDelete(this)">Delete</button>'
+                 }
+            populateTable()
+        </script>
+    </body>
+</html>
