@@ -1,4 +1,3 @@
-import pymysql
 import mysql.connector
 import dbconfig as cfg
 
