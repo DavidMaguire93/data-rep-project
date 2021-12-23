@@ -5,6 +5,7 @@ from OrderDao import orderDao
 app = Flask(__name__, static_url_path='', static_folder='staticpages')
 app.secret_key = 'SomeSecretKey'
 
+# Home page with option to logout or go to shop index
 @app.route('/')
 def home():
     if not 'username' in session:
@@ -14,6 +15,8 @@ def home():
         '<br><br><a href = "'+url_for('logout')+'"><button>Logout</button></a>' +\
         '<br><br><a href = "index.html"><button>Shop Index</button>'
 
+
+# Login page
 @app.route('/login')
 def login():
     return 'Please enter your username (Check Readme)'+\
@@ -24,6 +27,8 @@ def login():
             '</a>' +\
         '</button>'
 
+
+# Could not get username processing to work so any username will work
 @app.route('/processlogin')
 def process_login():
     # Insert check for credentials
