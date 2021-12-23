@@ -23,6 +23,8 @@ class OrderDao:
     def getCursor(self):
         if not self.db.is_connected():
             self.connectToDB()
+
+        # Gets queries as dicts
         return self.db.cursor(dictionary = True)
 
     # Create new order in table

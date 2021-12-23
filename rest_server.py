@@ -1,6 +1,4 @@
 from flask import Flask, url_for, request, redirect, abort, jsonify, session
-from pymysql import NULL
-from werkzeug.urls import url_quote_plus
 from ProductDao import productDao
 from OrderDao import orderDao
 
@@ -12,7 +10,7 @@ def home():
     if not 'username' in session:
         return redirect(url_for('login'))
 
-    return 'Welcome ' + session['username'] +\
+    return 'Welcome ' +\
         '<br><br><a href = "'+url_for('logout')+'"><button>Logout</button></a>' +\
         '<br><br><a href = "index.html"><button>Shop Index</button>'
 
