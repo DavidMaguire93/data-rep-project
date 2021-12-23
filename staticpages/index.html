@@ -7,8 +7,34 @@
                 integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     </head>
+    <style>
+        .headerdiv {
+            width:100%;
+            height: 200px;
+            background: url('https://www.scjunction.com/hubfs/header_extensiveInventory.jpg')
+        }
+        body{
+            background-color: rgb(53, 54, 54);
+            color: white
+        }
+        .table{
+            color: rgb(224, 223, 223);
+            background-color: "darkslategray";
+        }
+        .button {
+            background-color: white;
+            color: black;
+            border: 2px solid #555555;
+            }
+
+        .button:hover {
+            background-color: #555555;
+            color: white;
+            }
+    </style>
     <body>
-        <div id="create-update" style="display:none">
+        <div class = headerdiv></div>
+        <div class = table id="create-update" style="display:none">
             <h2>create-edit</h2>
             <table id="createUpdateForm">
                 <tr>
@@ -29,15 +55,45 @@
                 </tr>
                 <tr>
                     <td></td><td>
-                        <button id="create-button" onclick="doCreate()">Create</button>     
-                        <button id="update-button" onclick="doUpdate()">Update</button>
+                        <button class = "button" id="create-button" onclick="doCreate()">Create Product</button>     
+                        <button class = "button" id="update-button" onclick="doUpdate()">Update</button>
                     </td>
                 </tr>
             </table>
         </div>
+
+        <div class = table id="create-update-order" style="display:none">
+            <h2>create-edit</h2>
+            <table id="createUpdateOrderForm">
+                <tr>
+                    <td>orderID</td>
+                    <td><input type="text" name="orderID" id="idInput"></td>
+                </tr>
+                <tr>  
+                    <td>customerID</td>
+                    <td><input type="number" name="customerID"></td>
+                </tr>
+                <tr>
+                    <td>productID</td>
+                    <td><input type="number" name="productID"></td>
+                </tr>
+                <tr>    
+                    <td>quantity</td>
+                    <td><input type="number" name="quantity"></td>
+                </tr>
+                <tr>
+                    <td></td><td>
+                        <button class = "button" id="create-order-button" onclick="doCreateOrder()">Create Order</button>     
+                        <button class = "button" id="update-order-button" onclick="doUpdateOrder()">Update</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+
         <div id="display">
             <h2>Products</h2>
-            <button onClick="showCreate()">Create</button>
+            <button class = "button" onClick="showCreate()">Create Product</button>
             <table id="productTable" class="table">
                 <tr>
                     <th id = "ProductIDTable">ProductID</th><th>name</th><th>category</th><th>price</th><th></th><th></th>
@@ -45,6 +101,21 @@
                 
             </table>
 
+        </div>
+
+        <div id="display-order">
+            <h2>Orders</h2>
+            <button class = "button" onClick="showCreateOrder()">Create Order</button>
+            <table id="orderTable" class="table">
+                <tr>
+                    <th id = "orderIDTable">orderID</th><th>customerID</th><th>productName</th><th>quantity</th><th>orderCost</th><th></th><th></th>
+                </tr>
+                
+            </table>
+
+        </div>
+        <div>
+            <a href = "/logout"><button class = "button">Logout</button>
         </div>
 
         <script>
@@ -59,13 +130,46 @@
                 form.querySelector('input[name="ProductID"]').disabled=true
 
                 document.getElementById('display').style.display = "none"
+                document.getElementById('display-order').style.display = "none"
                 document.getElementById('update-button').style.display = "none"
                 document.getElementById('create-button').style.display = "block"
                 document.getElementById('create-update').style.display = "block"
+                document.getElementById('create-update-order').style.display = "none"
+                document.getElementById('create-order-button').style.display = "none"
+                document.getElementById('update-order-button').style.display = "none"
 
 
 
             }
+
+
+
+
+            function showCreateOrder(){
+
+                var form = document.getElementById('createUpdateOrderForm')
+
+                // Have empty string in ID as reloading the page generates an ID"
+                // I attempted to create a function that gets the next ID that will be used 
+                // but this was quite difficult due to asynchronicity in ajax functions
+                form.querySelector('input[name="orderID"]').value = ""
+                form.querySelector('input[name="orderID"]').disabled=true
+
+                document.getElementById('display').style.display = "none"
+                document.getElementById('display-order').style.display = "none"
+                document.getElementById('update-button').style.display = "none"
+                document.getElementById('create-button').style.display = "none"
+                document.getElementById('create-update').style.display = "none"
+                document.getElementById('create-update-order').style.display = "block"
+                document.getElementById('create-order-button').style.display = "block"
+                document.getElementById('update-order-button').style.display = "none"
+
+
+
+
+}
+
+
             function showUpdate(thisElem){
                 var rowElement = thisElem.parentNode.parentNode;
                 product = readProductFromRow(rowElement)
@@ -77,6 +181,23 @@
                 document.getElementById('create-update').style.display = "block"
 
             }
+
+            function showUpdateOrder(thisElem){
+                var rowElement = thisElem.parentNode.parentNode;
+                order = readOrderFromRow(rowElement)
+                populateOrderForm(order)
+
+                document.getElementById('display').style.display = "none"
+                document.getElementById('display-order').style.display = "none"
+                document.getElementById('update-button').style.display = "none"
+                document.getElementById('create-button').style.display = "none"
+                document.getElementById('create-update').style.display = "none"
+                document.getElementById('create-update-order').style.display = "block"
+                document.getElementById('create-order-button').style.display = "none"
+                document.getElementById('update-order-button').style.display = "block"
+
+            }
+
             function readProductFromRow(rowElement){
                 product = {}
                 product.ProductID = rowElement.getAttribute("id");
@@ -85,6 +206,17 @@
                 product.price = rowElement.cells[3].firstChild.textContent
 
                 return product
+            }
+
+                
+            function readOrderFromRow(rowElement){
+                order = {}
+                order.orderID = rowElement.getAttribute("id");
+                order.customerID = rowElement.cells[1].firstChild.textContent
+                order.productID = rowElement.cells[2].firstChild.textContent
+                order.quantity = rowElement.cells[3].firstChild.textContent
+
+                return order
                 
             }
             function populateForm(product){
@@ -98,6 +230,21 @@
                 form.querySelector('input[name="category"]').value = product.category
                 form.querySelector('input[name="price"]').value = product.price      
             }
+
+            function populateOrderForm(order){
+                var form = document.getElementById('createUpdateOrderForm')
+
+                
+                form.querySelector('input[name="orderID"]').value = order.orderID
+                form.querySelector('input[name="orderID"]').disabled=true
+                
+                form.querySelector('input[name="customerID"]').value = order.customerID
+                form.querySelector('input[name="quantity"]').value = order.quantity     
+            }
+
+
+
+            
             function clearForm() {
                     var form = document.getElementById('createUpdateForm')
 
@@ -108,6 +255,19 @@
                     form.querySelector('input[name="name"]').value = ''
                     form.querySelector('input[name="category"]').value = ''
                     form.querySelector('input[name="price"]').value = ''
+                }
+
+                        
+                function clearFormOrder() {
+                    var form = document.getElementById('createUpdateFormOrder')
+
+
+                    form.querySelector('input[name="orderID"]').value = ''
+                    form.querySelector('input[name="orderID"]').disabled = false
+
+                    form.querySelector('input[name="customerID"]').value = ''
+                    form.querySelector('input[name="productID"]').value = ''
+                    form.querySelector('input[name="quantity"]').value = ''
                 }
 
             function doCreate(){
@@ -133,13 +293,48 @@
                 })
                 // Reloading allows the ID to refresh due to auto-increment
                 window.location.reload();
-               
             }
+
+
+            function doCreateOrder(){
+                console.log("in doCreateOrder")
+                order= getOrderFromForm()
+                console.log(order)
+                $.ajax({
+                    url:"/orders",
+                    data:JSON.stringify(order),
+                    method:"POST",
+                    dataType:"JSON",
+                    contentType: "application/json; charset=utf-8",
+                    success:function(result){
+                        console.log(result) 
+                        addOrderToTable(order)
+                        showDisplay()
+                        clearFormOrder()
+
+                    },
+                    error:function(xhr,status,error){
+                        console.log("error"+error)
+                    }
+                })
+                // Reloading allows the ID to refresh due to auto-increment
+                window.location.reload();
+            }
+               
+            
             function doUpdate(){
                 product = getProductFromForm()
                 updateServer(product)
                 
             }
+
+            function doUpdateOrder(){
+                order = getOrderFromForm()
+                updateServerOrder(order)
+                
+            }
+
+
             function updateServer(product){
                $.ajax({
                     url: "/products/"+product.ProductID,
@@ -158,7 +353,32 @@
                         console.log("error" + error)
                     }
                 })
+                // Reloading allows the ID to refresh due to auto-increment
+                window.location.reload();
             }
+
+            function updateServerOrder(order){
+               $.ajax({
+                    url: "/orders/"+order.orderID,
+                    data: JSON.stringify(order),
+                    method: "PUT",
+                    dataType: "JSON",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (result) {
+                        console.log(result)
+                        updateTableRowOrder(order)
+                        showDisplay()
+                        clearFormOrder()
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("error" + error)
+                    }
+                })
+                    // Reloading allows the ID to refresh due to auto-increment
+                    window.location.reload();
+            }
+
             function doDelete(thisElem){
                 var tableElement = document.getElementById('productTable');
                 var rowElement = thisElem.parentNode.parentNode;
@@ -177,6 +397,26 @@
                 })
                 
             }
+
+            function doDeleteOrder(thisElem){
+                var tableElement = document.getElementById('orderTable');
+                var rowElement = thisElem.parentNode.parentNode;
+                var index = rowElement.rowIndex;
+                orderID = rowElement.getAttribute("id");
+                $.ajax({
+                    url:"/orders/"+orderID,
+                    method:"DELETE",
+                    dateType:"JSON",
+                    success:function(result){
+                        tableElement.deleteRow(index);
+                    },
+                    error:function(xhr,status,error){
+                        console.log(error)
+                    }
+                })
+                
+            }
+
             function updateTableRow(product){
                 rowElement = document.getElementById(product.ProductID)
                 rowElement.cells[1].firstChild.textContent = product.name
@@ -184,6 +424,15 @@
                 rowElement.cells[3].firstChild.textContent = product.price
                 //console.log("updating table")
             }
+
+            function updateTableRowOrder(order){
+                rowElement = document.getElementById(order.orderID)
+                rowElement.cells[1].firstChild.textContent = order.customerID
+                rowElement.cells[2].firstChild.textContent = order.productID
+                rowElement.cells[3].firstChild.textContent = order.quantity
+                //console.log("updating table")
+            }
+
             function getProductFromForm(){
                 var form = document.getElementById('createUpdateForm')
 
@@ -194,6 +443,19 @@
                 product.price = form.querySelector('input[name="price"]').value
                 //console.log(product)
                 return product
+            }
+
+                function getOrderFromForm(){
+                var form = document.getElementById('createUpdateOrderForm')
+
+                var order = {}
+                order.orderID = form.querySelector('input[name="orderID"]').value
+                order.customerID = form.querySelector('input[name="customerID"]').value
+                order.productID = form.querySelector('input[name="productID"]').value
+                order.quantity = form.querySelector('input[name="quantity"]').value
+                //console.log(product)
+                return order
+            
             }
              function showDisplay() {
                     document.getElementById('display').style.display = "block"
@@ -222,6 +484,26 @@
                })
                
             }
+
+            function populateOrderTable(){
+            host = window.location.origin
+               $.ajax({
+                   url: host + '/ordersjoin',
+                   method:'GET',
+                   datatype:'JSON',
+                   success:function(results){
+                        for (order of results){
+                             addOrderToTable(order)
+                        }
+                   },
+                   error:function (xhr,status,error){
+                       console.log ("error "+error +" code:"+status)
+                   }
+
+               })
+               
+            }
+
             function addProductToTable(product){
                 //console.log("working so far")
                 tableElem = document.getElementById("productTable")
@@ -236,11 +518,36 @@
                 cell4 = rowElem.insertCell(3)
                 cell4.innerHTML = product.price
                 cell5 = rowElem.insertCell(4)
-                cell5.innerHTML = '<button onclick="showUpdate(this)">Update</button>'
+                cell5.innerHTML = '<button class = "button" onclick="showUpdate(this)">Update</button>'
                 cell6 = rowElem.insertCell(5)
-                cell6.innerHTML = '<button onclick="doDelete(this)">Delete</button>'
+                cell6.innerHTML = '<button class = "button" onclick="doDelete(this)">Delete</button>'
                  }
+
+                 function addOrderToTable(order){
+                //console.log("working so far")
+                tableElem = document.getElementById("orderTable")
+                rowElem = tableElem.insertRow(-1)
+                rowElem.setAttribute("id", order.orderID)
+                cell1 = rowElem.insertCell(0)
+                cell1.innerHTML = order.orderID
+                cell2 = rowElem.insertCell(1)
+                cell2.innerHTML = order.customerID
+                cell3 = rowElem.insertCell(2)
+                cell3.innerHTML = order.productName
+                cell4 = rowElem.insertCell(3)
+                cell4.innerHTML = order.quantity
+                cell4 = rowElem.insertCell(4)
+                cell4.innerHTML = order.orderCost
+                cell5 = rowElem.insertCell(5)
+                cell5.innerHTML = '<button class = "button" onclick="showUpdateOrder(this)">Update</button>'
+                cell6 = rowElem.insertCell(6)
+                cell6.innerHTML = '<button class = "button" onclick="doDeleteOrder(this)">Delete</button>'
+                 }
+
+
+            
             populateTable()
+            populateOrderTable()
         </script>
     </body>
 </html>
